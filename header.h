@@ -52,6 +52,7 @@ namespace particles{
 
 //Function definitions
 void drawcube();
+void drawPlane();
 //Glut keyboard function to handle keyboard inputs
 void keyboard(unsigned char key, int x, int y);
 //Defines what each menu function does
