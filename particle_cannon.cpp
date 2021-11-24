@@ -7,13 +7,18 @@ COSC 3P98 Assignment #3
 
 //Header file
 #include "header.h"
+//Particle namespace file
+#include "particle.cpp"
+//Files for shape definitions
+#include "cannon.cpp"
+#include "plane.cpp"
 
 #define X 0
 #define Y 1
 #define Z 2
 
 //Menu options
-enum{MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
+enum{MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
 
 //the global structure
 typedef struct {
@@ -25,7 +30,7 @@ typedef struct {
     GLfloat zNear = 0.1;
     GLfloat zFar = 500.0;
     //Parameters of gluLookAt i.e camera placement in scene
-    GLfloat eye[3] = {35.0, 85.0, 170.0};
+    GLfloat eye[3] = {35.0, 100.0, 150.0};
     //Where the camera is centered
     GLfloat center[3] = {0.0, 0.0, 0.0};
     //Which direction is up relative to the camera
@@ -33,12 +38,36 @@ typedef struct {
     GLfloat rotate_x = 0.0;
     GLfloat rotate_y = 0.0;
     float angle[3];
+    //For resetting image to starting position
     int numb_rotations = 0;
+    //For toggling culling and shading
     bool cull_enabled = true;
     bool shaded_colour = true;
+    //particles::particle part;
+    std::vector<particles::particle> particle_arr;
 } glob;
 glob global;
-
+//Initialize some particles
+void initParticles(int numb_particles){
+    for(int i=0;i<numb_particles;i++){
+        //Initialize parameters for new particle
+        GLfloat speed = 1.0;
+        std::string shape = "cube";
+        GLfloat x = -110.0;
+        GLfloat y = 45.0;
+        GLfloat z = 0.0;
+        //Create particle and set its parameters
+        particles::particle part;
+        part.position.x = x;
+        part.position.y = y;
+        part.position.z = z;
+        part.speed = speed;
+        part.shape = shape;
+        //Add particle to global particle pool
+        global.particle_arr.push_back(part);
+    }
+}
+//Draw all entities to the window
 void drawShapes(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
@@ -46,117 +75,46 @@ void drawShapes(){
     glRotatef(global.rotate_y, 0.0, 1.0, 0.0);
     glRotatef(global.angle[Z], 0.0, 0.0, 1.0);
 
-    drawcube();
-    drawPlane();
+    glCallList(CANNON);
+    glCallList(PLANE);
+    
+    for(int i=0;i<global.particle_arr.size();i++){
+        //If particle has been killed, remove it from vector
+        if(global.particle_arr[i].kill){
+            global.particle_arr.erase(global.particle_arr.begin()+i);
+            continue;
+        }
+        //Update the particle's position
+        global.particle_arr[i].update_position();
+        //Draw the particle
+        shapes::drawCube(global.particle_arr[i].position.x,global.particle_arr[i].position.y,global.particle_arr[i].position.z);
+        //std::cout<<global.particle_arr[0].position.x<<","<<global.particle_arr[0].position.y<<","<<global.particle_arr[0].position.z<<std::endl;
+    }
 
     glutSwapBuffers();
     glFlush();
+    glutPostRedisplay();
 }
-
-void drawcube(void) {
-    int p[][3] = {{10,10,10}, {10,-10,10}, {-10,-10,10}, {-10,10,10},
-                 {10,10,-10}, {10,-10,-10}, {-10,-10,-10}, {-10,10,-10}};
-
-    int e[][4] = {{0,3,2,1},{3,7,6,2},{7,4,5,6},{4,0,1,5}, {0,4,7,3},{1,2,6,5}};
-    float c[][3] = {{1.0,0,0},{0,1.0,0},{1.0,1.0,1.0},
-		 {0,0,1.0},{.6,0,.6},{0,.6,.6}};
-
-    float singleColour[][3] = { {0.0,0.0,0.9},{0.0,0.0,0.4},{0.0,0.0,0.8},{0.0,0.0,0.6} };
-
-  glPushMatrix();
-  glTranslatef(-125.0,45.0,0.0);
-
-  for (int i=0; i < 6; ++i) {
-     glColor3fv(c[i]);
-     glBegin(GL_QUADS);
-        glColor3fv(singleColour[0]);
-        glVertex3iv(p[e[i][0]]);
-        glColor3fv(singleColour[1]);
-        glVertex3iv(p[e[i][1]]);
-        glColor3fv(singleColour[2]);
-        glVertex3iv(p[e[i][2]]);
-        glColor3fv(singleColour[3]);
-        glVertex3iv(p[e[i][3]]);
-     glEnd();
-  }
-  glPopMatrix();
+//Glut mouse function to handle mouse inputs
+void mouse(int btn, int state, int x, int y) {
+    float scale_factor = 1.15;
+    //Mouse wheel scroll up
+    if(btn == 3){
+        if(state == GLUT_UP) return;
+        //Zoom in perspective
+        glMatrixMode(GL_PROJECTION_MATRIX);
+        glScalef(scale_factor,scale_factor,scale_factor);
+    }
+    //Mouse wheel scroll down
+    if(btn == 4){
+        if(state == GLUT_UP) return;
+        //Zoom out perspective
+        glMatrixMode(GL_PROJECTION_MATRIX);
+        float scale_down = 1/scale_factor;
+        glScalef(scale_down,scale_down,scale_down);
+    }
+   
 }
-
-void drawPlane(void){
-    int p[][3] = {{125,0,100},{-125,0,100},{-125,0,-100},{125,0,-100},
-                  {125,-25,100},{-125,-25,100},{-125,-25,-100},{125,-25,-100}};
-    
-    float topColours[][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
-    float sideColours[][3] = { {0.0,0.9,0.0},{0.0,0.1,0.0},{0.0,0.8,0.0},{0.0,0.5,0.0} };
-
-    //Top
-    glBegin(GL_POLYGON);
-        glColor3fv(topColours[0]);
-        glVertex3iv(p[3]);
-        glColor3fv(topColours[1]);
-        glVertex3iv(p[2]);
-        glColor3fv(topColours[2]);
-        glVertex3iv(p[1]);
-        glColor3fv(topColours[3]);
-        glVertex3iv(p[0]);
-    glEnd();
-    //Sides
-    glBegin(GL_POLYGON);
-        glColor3fv(sideColours[0]);
-        glVertex3iv(p[4]);
-        glColor3fv(sideColours[1]);
-        glVertex3iv(p[7]);
-        glColor3fv(sideColours[2]);
-        glVertex3iv(p[3]);
-        glColor3fv(sideColours[3]);
-        glVertex3iv(p[0]);
-    glEnd();
-    glColor3f(0.0,1.0,0.0);
-    glBegin(GL_POLYGON);
-        glColor3fv(sideColours[0]);
-        glVertex3iv(p[7]);
-        glColor3fv(sideColours[1]);
-        glVertex3iv(p[6]);
-        glColor3fv(sideColours[2]);
-        glVertex3iv(p[2]);
-        glColor3fv(sideColours[3]);
-        glVertex3iv(p[3]);
-    glEnd();
-    glColor3f(0.0,1.0,0.0);
-    glBegin(GL_POLYGON);
-        glColor3fv(sideColours[0]);
-        glVertex3iv(p[6]);
-        glColor3fv(sideColours[1]);
-        glVertex3iv(p[5]);
-        glColor3fv(sideColours[2]);
-        glVertex3iv(p[1]);
-        glColor3fv(sideColours[3]);
-        glVertex3iv(p[2]);
-    glEnd();
-    glColor3f(0.0,1.0,0.0);
-    glBegin(GL_POLYGON);
-        glColor3fv(sideColours[0]);
-        glVertex3iv(p[5]);
-        glColor3fv(sideColours[1]);
-        glVertex3iv(p[4]);
-        glColor3fv(sideColours[2]);
-        glVertex3iv(p[0]);
-        glColor3fv(sideColours[3]);
-        glVertex3iv(p[1]);
-    glEnd();
-    //Bottom
-    glBegin(GL_POLYGON);
-        glColor3fv(topColours[0]);
-        glVertex3iv(p[4]);
-        glColor3fv(topColours[1]);
-        glVertex3iv(p[5]);
-        glColor3fv(topColours[2]);
-        glVertex3iv(p[6]);
-        glColor3fv(topColours[3]);
-        glVertex3iv(p[7]);
-    glEnd();
-}
-
 //Glut keyboard function to handle keyboard inputs
 void keyboard(unsigned char key, int x, int y){
     switch (key){
@@ -168,13 +126,13 @@ void keyboard(unsigned char key, int x, int y){
             break;
         case 'd':
             glPushMatrix();
-            global.rotate_y += 0.5;
+            global.rotate_y += -0.5;
             global.numb_rotations++;
             glutPostRedisplay();
             break;
         case 'a':
             glPushMatrix();
-            global.rotate_y += -0.5;
+            global.rotate_y += 0.5;
             global.numb_rotations++;
             glutPostRedisplay();
             break;
@@ -198,7 +156,7 @@ void menu_func(int value){
         //Close the program
         case MENU_QUIT:
             exit(0);
-            break;
+        break;
         case MENU_RESET:
             global.angle[X] = 0.0;
             global.angle[Y] = 0.0;
@@ -209,7 +167,7 @@ void menu_func(int value){
                 glPopMatrix();
             }
             global.numb_rotations = 0;
-            break;
+        break;
         case MENU_CULL:
             if(global.cull_enabled){
                 glDisable(GL_CULL_FACE);
@@ -221,7 +179,7 @@ void menu_func(int value){
                 global.cull_enabled = true;
                 std::cout<<"Backface culling enabled"<<std::endl;
             }
-            break;
+        break;
         case MENU_SHADE:
             if(global.shaded_colour){
                 glShadeModel(GL_FLAT);
@@ -233,15 +191,71 @@ void menu_func(int value){
                 global.shaded_colour = true;
                 std::cout<<"Gouraud shading enabled"<<std::endl;
             }
-            break;
+        break;
+        case MENU_PARTICLE:
+            initParticles(1);
+        break;
+        case MENU_FOV:
+            std::cout<<"Current FOV value: "<<global.fov<<std::endl;
+            std::cout<<"Enter new value for FOV: ";
+            try{
+                float new_fov;
+                std::cin>>new_fov;
+                if(std::cin.fail()) throw 1;
+                if(new_fov < 1 || new_fov > 1000) throw 2;
+                global.fov = new_fov;
+            }
+            catch(int err){
+                //Clear error flags
+                std::cin.clear();
+                //Clear input buffer
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                if(err == 1){
+                    std::cout<<"Invalid input. FOV must be a number."<<std::endl;
+                }
+                if(err == 2){
+                    std::cout<<"Invalid input. FOV must be greater than 0 and less than 1000."<<std::endl;
+                }
+            }
+        break;
+        case MENU_RATIO:
+        std::cout<<"Current aspect ratio value: "<<global.aspect_ratio<<std::endl;
+        std::cout<<"Enter new value for aspect ratio: ";
+        try{
+            float new_aspect_ratio;
+            std::cin>>new_aspect_ratio;
+            if(std::cin.fail()) throw 1;
+            if(new_aspect_ratio < 0.1 || new_aspect_ratio > 5) throw 2;
+            global.aspect_ratio = new_aspect_ratio;
+        }
+        catch(int err){
+            //Clear error flags
+            std::cin.clear();
+            //Clear input buffer
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            if(err == 1){
+                std::cout<<"Invalid input. Aspect ratio must be a number."<<std::endl;
+            }
+            else if(err == 2){
+                std::cout<<"Invalid input. Aspect ratio must be greater than 0.1 and less than 5."<<std::endl;
+            }
+        }
+        break;
     }
 }
 //Defines a menu accessed by right clicking the graphics window
 void create_menu(){
+    //Menu for changing perspective parameters
+    int perspective_menu = glutCreateMenu(&menu_func);
+    glutAddMenuEntry("Change FOV", MENU_FOV);
+    glutAddMenuEntry("Change aspect ratio", MENU_RATIO);
+    //Main right click menu
     int main_menu = glutCreateMenu(&menu_func);
     glutAddMenuEntry("Reset",MENU_RESET);
-    glutAddMenuEntry("Toggle Backface Culling", MENU_CULL);
+    glutAddMenuEntry("New Particle",MENU_PARTICLE);
+    //glutAddSubMenu("Perspective Parameters", perspective_menu);
     glutAddMenuEntry("Toggle Shading", MENU_SHADE);
+    glutAddMenuEntry("Toggle Backface Culling", MENU_CULL);
     glutAddMenuEntry("Quit", MENU_QUIT);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
@@ -257,6 +271,7 @@ int main (int argc, char **argv){
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutCreateWindow("Particle Cannon");
     glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
     key_commands();
     create_menu();
     glutDisplayFunc(drawShapes);
@@ -282,6 +297,9 @@ int main (int argc, char **argv){
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
     glShadeModel(GL_SMOOTH);
+
+    defineCannon();
+    definePlane();
 
     glutMainLoop();
     return 0;
