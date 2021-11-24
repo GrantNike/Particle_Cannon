@@ -2,7 +2,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+//For string
 #include <string>
+//For particle shapes
 #include "shapes.cpp"
 
 namespace particles{
@@ -50,26 +52,35 @@ namespace particles{
         public:
         point position;
         point velocity;
-        GLfloat speed;
+        //GLfloat speed;
         GLfloat gravity;
         col colour;
         std::string shape;
         bool kill;
-        //Particle constructor
+        //Default Particle constructor
         particle(){
             gravity = -0.1;
-            velocity.x = 1;
+            velocity.x = 0.1;
             velocity.y = -1;
             velocity.z = 0;
-            velocity.x += speed;
-            //Keep direction of speed, just change magnitude of velocity in z direction
-            if(velocity.z > 0){
-                velocity.z += speed;
-            }
-            else if(velocity.z < 0){
-                velocity.z += -speed;
-            }
             kill = false;
+        }
+        //Particle constructor with start position as parameter
+        particle(GLfloat x, GLfloat y, GLfloat z){
+            gravity = -0.1;
+            velocity.x = 0.1;
+            velocity.y = -1;
+            velocity.z = 0;
+            kill = false;
+            GLfloat speed_x = ((float)(rand()%200))/100.0;
+            GLfloat speed_z = ((float)((rand()%400)-200))/100.0;
+            velocity.x += speed_x;
+            //Keep direction of speed, just change magnitude of velocity in z direction
+            velocity.z += speed_z;
+            position.x = x;
+            position.y = y;
+            position.z = z;
+            shape = "cube";
         }
         //Check if the particle has collided with the plane
         bool ground_collision(){
@@ -77,7 +88,7 @@ namespace particles{
             GLfloat new_y = position.y + velocity.y;
             GLfloat new_z = position.z + velocity.z;
 
-            return new_y < 0 && new_x < 125 && new_x > -125 && new_z < 100 && new_z > -100;
+            return new_y < 3 && new_x < 125 && new_x > -125 && new_z < 100 && new_z > -100;
         }
         void update_position(){
             //If particle collides with ground

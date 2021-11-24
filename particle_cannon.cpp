@@ -3,16 +3,15 @@ Grant Nike
 6349302
 Dec 6th
 COSC 3P98 Assignment #3
+A 3D Graphics Application which implements a 'Particle Cannon'
+
+Note: Uses code from 'rotate2b.c' and 'rotate_light_displist.c'
+from code examples page by Brian J. Ross
 */
 
-//Header file
+//Header file contains all other includes, and function declarations
 #include "header.h"
-//Particle namespace file
-#include "particle.cpp"
-//Files for shape definitions
-#include "cannon.cpp"
-#include "plane.cpp"
-
+//For rotation about axes
 #define X 0
 #define Y 1
 #define Z 2
@@ -43,57 +42,82 @@ typedef struct {
     //For toggling culling and shading
     bool cull_enabled = true;
     bool shaded_colour = true;
-    //particles::particle part;
+    //Pool of particles to be drawn to window
     std::vector<particles::particle> particle_arr;
+    //For toggling constant stream of particles
+    bool const_stream = false;
 } glob;
 glob global;
+
 //Initialize some particles
-void initParticles(int numb_particles){
+void init_particles(int numb_particles){
+    //Initialize parameters for new particles
+    GLfloat x = -115.0;
+    GLfloat y = 45.0;
+    GLfloat z = 0.0;
     for(int i=0;i<numb_particles;i++){
-        //Initialize parameters for new particle
-        GLfloat speed = 1.0;
-        std::string shape = "cube";
-        GLfloat x = -110.0;
-        GLfloat y = 45.0;
-        GLfloat z = 0.0;
-        //Create particle and set its parameters
-        particles::particle part;
-        part.position.x = x;
-        part.position.y = y;
-        part.position.z = z;
-        part.speed = speed;
-        part.shape = shape;
+        //Create particle and set its starting position
+        particles::particle part(x,y,z);
         //Add particle to global particle pool
         global.particle_arr.push_back(part);
     }
 }
 //Draw all entities to the window
-void drawShapes(){
+void draw_shapes(){
+    //Clear buffer to prepare for new image
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
+    //Rotate scene based on user input
     glRotatef(global.rotate_x, 1.0, 0.0, 0.0);
     glRotatef(global.rotate_y, 0.0, 1.0, 0.0);
     glRotatef(global.angle[Z], 0.0, 0.0, 1.0);
-
+    //Draw cannon
     glCallList(CANNON);
+    //Draw plane
     glCallList(PLANE);
-    
+    //Remove excess particles
     for(int i=0;i<global.particle_arr.size();i++){
         //If particle has been killed, remove it from vector
         if(global.particle_arr[i].kill){
             global.particle_arr.erase(global.particle_arr.begin()+i);
-            continue;
         }
+    }
+    if(global.const_stream){
+        init_particles(1);
+    }
+    //Draw particles to screen
+    for(int i=0;i<global.particle_arr.size();i++){
         //Update the particle's position
         global.particle_arr[i].update_position();
         //Draw the particle
         shapes::drawCube(global.particle_arr[i].position.x,global.particle_arr[i].position.y,global.particle_arr[i].position.z);
         //std::cout<<global.particle_arr[0].position.x<<","<<global.particle_arr[0].position.y<<","<<global.particle_arr[0].position.z<<std::endl;
     }
-
+    //Display new scene
     glutSwapBuffers();
     glFlush();
     glutPostRedisplay();
+}
+//Reset orientation of scene
+void reset_orientation(){
+    global.angle[X] = 0.0;
+    global.angle[Y] = 0.0;
+    global.angle[Z] = 0.0;
+    global.rotate_x = 0.0;
+    global.rotate_y = 0.0;
+    for(int i=0;i<global.numb_rotations;i++){
+        glPopMatrix();
+    }
+    global.numb_rotations = 0;
+}
+//Clear all particles from scene
+void reset_particles(){
+    global.particle_arr.clear();
+}
+//Reset all parameters of scene to inital values
+void reset_scene(){
+    reset_orientation();
+    reset_particles();
 }
 //Glut mouse function to handle mouse inputs
 void mouse(int btn, int state, int x, int y) {
@@ -146,8 +170,22 @@ void keyboard(unsigned char key, int x, int y){
             glPushMatrix();
             global.rotate_x += -0.5;
             global.numb_rotations++;
-            glutPostRedisplay;
+            glutPostRedisplay();
             break;
+        //Single particle shot
+        case 'E':
+        case 'e':
+            init_particles(1);
+        break;
+        case 'F':
+        case 'f':
+            if(global.const_stream){
+                global.const_stream = false;
+            }
+            else{
+                global.const_stream = true;
+            }
+        break;
     }
 }
 //Defines what each menu function does
@@ -158,15 +196,7 @@ void menu_func(int value){
             exit(0);
         break;
         case MENU_RESET:
-            global.angle[X] = 0.0;
-            global.angle[Y] = 0.0;
-            global.angle[Z] = 0.0;
-            global.rotate_x = 0.0;
-            global.rotate_y = 0.0;
-            for(int i=0;i<global.numb_rotations;i++){
-                glPopMatrix();
-            }
-            global.numb_rotations = 0;
+            reset_scene();
         break;
         case MENU_CULL:
             if(global.cull_enabled){
@@ -193,7 +223,7 @@ void menu_func(int value){
             }
         break;
         case MENU_PARTICLE:
-            initParticles(1);
+            init_particles(1);
         break;
         case MENU_FOV:
             std::cout<<"Current FOV value: "<<global.fov<<std::endl;
@@ -261,10 +291,13 @@ void create_menu(){
 }
 //Prints the key and its function to the terminal
 void key_commands(){
+    std::cout<<"E = Single Particle Shot"<<std::endl;
     std::cout<<"Q = Quit"<<std::endl;
 }
 
 int main (int argc, char **argv){
+    //Initialize seed for random number generation
+    srand(time(NULL));
     glutInit(&argc,argv);
     glutInitWindowSize(global.screen_width,global.screen_height);
     //Enable z buffering, must clear buffer when drawing a new frame
@@ -274,8 +307,8 @@ int main (int argc, char **argv){
     glutMouseFunc(mouse);
     key_commands();
     create_menu();
-    glutDisplayFunc(drawShapes);
-    glutIdleFunc(drawShapes);
+    glutDisplayFunc(draw_shapes);
+    glutIdleFunc(draw_shapes);
 
     glMatrixMode(GL_PROJECTION);
     float width = glutGet(GLUT_WINDOW_WIDTH);
