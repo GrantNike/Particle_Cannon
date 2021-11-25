@@ -5,7 +5,7 @@
 
 namespace shapes{
     
-    void drawCube(GLfloat x,GLfloat y,GLfloat z) {
+    void drawCube(GLfloat x,GLfloat y,GLfloat z,GLfloat colour[4][3]) {
         //Dimensions of shape
         int dimensions[][3] = {{2,2,2}, {2,-2,2}, {-2,-2,2}, {-2,2,2},
                     {2,2,-2}, {2,-2,-2}, {-2,-2,-2}, {-2,2,-2}};
@@ -21,13 +21,13 @@ namespace shapes{
         for (int i=0; i < 6; ++i) {
             glColor3fv(c[i]);
             glBegin(GL_QUADS);
-                glColor3fv(singleColour[0]);
+                glColor3fv(colour[0]);
                 glVertex3iv(dimensions[e[i][0]]);
-                glColor3fv(singleColour[1]);
+                glColor3fv(colour[1]);
                 glVertex3iv(dimensions[e[i][1]]);
-                glColor3fv(singleColour[2]);
+                glColor3fv(colour[2]);
                 glVertex3iv(dimensions[e[i][2]]);
-                glColor3fv(singleColour[3]);
+                glColor3fv(colour[3]);
                 glVertex3iv(dimensions[e[i][3]]);
             glEnd();
         }

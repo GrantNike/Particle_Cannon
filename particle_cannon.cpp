@@ -82,6 +82,7 @@ void draw_shapes(){
             global.particle_arr.erase(global.particle_arr.begin()+i);
         }
     }
+    //Create a new particle if user has enabled constant particle stream
     if(global.const_stream){
         init_particles(1);
     }
@@ -90,7 +91,7 @@ void draw_shapes(){
         //Update the particle's position
         global.particle_arr[i].update_position();
         //Draw the particle
-        shapes::drawCube(global.particle_arr[i].position.x,global.particle_arr[i].position.y,global.particle_arr[i].position.z);
+        shapes::drawCube(global.particle_arr[i].position.x,global.particle_arr[i].position.y,global.particle_arr[i].position.z,global.particle_arr[i].colour);
         //std::cout<<global.particle_arr[0].position.x<<","<<global.particle_arr[0].position.y<<","<<global.particle_arr[0].position.z<<std::endl;
     }
     //Display new scene

@@ -35,18 +35,6 @@ namespace particles{
             return p;
         }
     };
-    //Represents a colour
-    class col{
-        public:
-        GLfloat r,g,b;
-        //Overload == operator to define if two colours are equal
-        bool operator ==(col c2){
-            return r == c2.r && g == c2.g && b == c2.b;
-        }
-        bool operator !=(col c2){
-            return r != c2.r || g != c2.g || b != c2.b;
-        }
-    };
     //A single particle in the swarm
     class particle{
         public:
@@ -54,7 +42,7 @@ namespace particles{
         point velocity;
         //GLfloat speed;
         GLfloat gravity;
-        col colour;
+        GLfloat colour[4][3];
         std::string shape;
         bool kill;
         //Default Particle constructor
@@ -81,6 +69,14 @@ namespace particles{
             position.y = y;
             position.z = z;
             shape = "cube";
+            init_colour();
+        }
+        void init_colour(){
+            for(int i=0;i<4;i++){
+                for(int j=0;j<3;j++){
+                    colour[i][j] = ((float)(rand()%100))/100.0;
+                }
+            }
         }
         //Check if the particle has collided with the plane
         bool ground_collision(){
@@ -120,7 +116,7 @@ namespace particles{
         void draw_particle(){
             if(shape == "cube"){
                 update_position();
-                shapes::drawCube(position.x,position.y,position.z);
+                shapes::drawCube(position.x,position.y,position.z,colour);
             }
         }
         
