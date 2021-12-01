@@ -11,6 +11,7 @@ from code examples page by Brian J. Ross
 
 /*
 Still to be done:
+idea: allow user to change gravity and friction values
 14. lighting and materials
 18. different shapes(colours already done)
 15. collide with objects on ground, use fast distance

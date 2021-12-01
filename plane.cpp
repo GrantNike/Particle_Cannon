@@ -17,7 +17,7 @@ void definePlane(void){
     float norm[][3] = {{0,0,1.0},{-1.0,0,0},{0,0,-1.0},{1.0,0,0},{0,1.0,0},{0,-1.0,0}};
     GLfloat mat_ambient[] = {0.0215, 0.1745, 0.0215, 1.0};
     GLfloat mat_diffuse[] = {0.0757, 0.6142, 0.1757, 1.0};
-    GLfloat mat_specular[] = {1.0, 1.0, 1.0, 1.0};
+    GLfloat mat_specular[] = {0.2, 0.2, 0.2, 1.0};
     GLfloat mat_shininess[] = { 77.0 };
 
     glNewList(PLANE, GL_COMPILE);
@@ -26,7 +26,7 @@ void definePlane(void){
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    
+
     //Top
     glNormal3fv(norm[4]);
     glBegin(GL_POLYGON);
@@ -79,7 +79,6 @@ void definePlane(void){
         glVertex3iv(p[2]);
     glEnd();
     // +Z
-    glColor3f(0.0,1.0,0.0);
     glNormal3fv(norm[0]);
     glBegin(GL_POLYGON);
         glColor3fv(sideColours[0]);
@@ -121,10 +120,23 @@ void definePlaneHole(void){
     float topColours[][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
     float sideColours[][3] = { {0.0,0.6,0.0},{0.0,0.3,0.0},{0.0,0.5,0.0},{0.0,0.4,0.0} };
     //float sideColours[][3] = { {0.0,0.4,0.0},{0.0,0.1,0.0},{0.0,0.3,0.0},{0.0,0.2,0.0} };
+
+    float norm[][3] = {{0,0,1.0},{-1.0,0,0},{0,0,-1.0},{1.0,0,0},{0,1.0,0},{0,-1.0,0}};
+    GLfloat mat_ambient[] = {0.0215, 0.1745, 0.0215, 1.0};
+    GLfloat mat_diffuse[] = {0.0757, 0.6142, 0.1757, 1.0};
+    GLfloat mat_specular[] = {0.2, 0.2, 0.2, 1.0};
+    GLfloat mat_shininess[] = { 77.0 };
     
 
     glNewList(PLANE_HOLE, GL_COMPILE);
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
     //Top 1
+    glNormal3fv(norm[4]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect1[3]);
@@ -136,6 +148,7 @@ void definePlaneHole(void){
         glVertex3iv(rect1[0]);
     glEnd();
     //Top 2
+    glNormal3fv(norm[4]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect2[3]);
@@ -147,6 +160,7 @@ void definePlaneHole(void){
         glVertex3iv(rect2[0]);
     glEnd();
     //Top 3
+    glNormal3fv(norm[4]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect3[3]);
@@ -158,6 +172,7 @@ void definePlaneHole(void){
         glVertex3iv(rect3[0]);
     glEnd();
     //Top 4
+    glNormal3fv(norm[4]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect4[3]);
@@ -169,6 +184,8 @@ void definePlaneHole(void){
         glVertex3iv(rect4[0]);
     glEnd();
     //Interior sides
+    // +Z
+    glNormal3fv(norm[0]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(rect1[7]);
@@ -180,6 +197,8 @@ void definePlaneHole(void){
         glVertex3iv(rect1[3]);
     glEnd();
     //Interior sides
+    // -Z
+    glNormal3fv(norm[2]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(rect2[5]);
@@ -191,6 +210,8 @@ void definePlaneHole(void){
         glVertex3iv(rect2[1]);
     glEnd();
     //Interior sides
+    // -X
+    glNormal3fv(norm[1]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(rect3[4]);
@@ -202,6 +223,8 @@ void definePlaneHole(void){
         glVertex3iv(rect3[0]);
     glEnd();
     //Interior sides
+    // +X
+    glNormal3fv(norm[3]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(rect4[6]);
@@ -213,6 +236,8 @@ void definePlaneHole(void){
         glVertex3iv(rect4[2]);
     glEnd();
     //Sides
+    // + X
+    glNormal3fv(norm[3]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(p[4]);
@@ -223,6 +248,8 @@ void definePlaneHole(void){
         glColor3fv(sideColours[3]);
         glVertex3iv(p[0]);
     glEnd();
+    // -Z
+    glNormal3fv(norm[2]);
     glColor3f(0.0,1.0,0.0);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
@@ -235,6 +262,8 @@ void definePlaneHole(void){
         glVertex3iv(p[3]);
     glEnd();
     glColor3f(0.0,1.0,0.0);
+    // -X
+    glNormal3fv(norm[1]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(p[6]);
@@ -245,7 +274,8 @@ void definePlaneHole(void){
         glColor3fv(sideColours[3]);
         glVertex3iv(p[2]);
     glEnd();
-    glColor3f(0.0,1.0,0.0);
+    // +Z
+    glNormal3fv(norm[0]);
     glBegin(GL_QUADS);
         glColor3fv(sideColours[0]);
         glVertex3iv(p[5]);
@@ -257,6 +287,7 @@ void definePlaneHole(void){
         glVertex3iv(p[1]);
     glEnd();
     //Bottom 1
+    glNormal3fv(norm[5]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect1[4]);
@@ -268,6 +299,7 @@ void definePlaneHole(void){
         glVertex3iv(rect1[7]);
     glEnd();
     //Bottom 2
+    glNormal3fv(norm[5]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect2[4]);
@@ -279,6 +311,7 @@ void definePlaneHole(void){
         glVertex3iv(rect2[7]);
     glEnd();
     //Bottom 3
+    glNormal3fv(norm[5]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect3[4]);
@@ -290,6 +323,7 @@ void definePlaneHole(void){
         glVertex3iv(rect3[7]);
     glEnd();
     //Bottom 4
+    glNormal3fv(norm[5]);
     glBegin(GL_POLYGON);
         glColor3fv(topColours[0]);
         glVertex3iv(rect4[4]);

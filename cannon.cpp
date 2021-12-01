@@ -17,7 +17,7 @@ void defineCannon(void) {
    float norm[][3] = {{0,0,1.0},{-1.0,0,0},{0,0,-1.0},{1.0,0,0},{0,1.0,0},{0,-1.0,0}};
    GLfloat mat_ambient[] = {0.0215, 0.1745, 0.0215, 1.0};
    GLfloat mat_diffuse[] = {0.0757, 0.1757, 0.6142, 1.0};
-   GLfloat mat_specular[] = {1.0, 1.0, 1.0, 1.0};
+   GLfloat mat_specular[] = {0.3, 0.3, 0.3, 1.0};
    GLfloat mat_shininess[] = { 77.0 };
   
    glNewList(CANNON, GL_COMPILE);
