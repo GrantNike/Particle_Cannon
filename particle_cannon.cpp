@@ -5,8 +5,15 @@ Dec 6th
 COSC 3P98 Assignment #3
 A 3D Graphics Application which implements a 'Particle Cannon'
 
-Note: Uses code from 'rotate2b.c' and 'rotate_light_displist.c'
+Note: Uses code from 'rotate2b.c', 'rotate_light_displist.c', and 'cube_perc.c'
 from code examples page by Brian J. Ross
+*/
+
+/*
+Still to be done:
+14. lighting and materials
+18. different shapes(colours already done)
+15. collide with objects on ground, use fast distance
 */
 
 //Header file contains all other includes, and function declarations
@@ -17,7 +24,7 @@ from code examples page by Brian J. Ross
 #define Z 2
 
 //Menu options
-enum{MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
+enum{MENU_HOLE,MENU_SPRAY, MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
 
 //the global structure
 typedef struct {
@@ -46,6 +53,12 @@ typedef struct {
     std::vector<particles::particle> particle_arr;
     //For toggling constant stream of particles
     bool const_stream = false;
+    //For swiching between polygon, wireframe, and points
+    std::string draw_type = "polygon";
+    //For toggling between high spray and low spray
+    bool high_spray = false;
+    //For toggling square hole in center of ground
+    bool square_hole = false;
 } glob;
 glob global;
 
@@ -57,7 +70,7 @@ void init_particles(int numb_particles){
     GLfloat z = 0.0;
     for(int i=0;i<numb_particles;i++){
         //Create particle and set its starting position
-        particles::particle part(x,y,z);
+        particles::particle part(x,y,z,global.high_spray);
         //Add particle to global particle pool
         global.particle_arr.push_back(part);
     }
@@ -74,7 +87,8 @@ void draw_shapes(){
     //Draw cannon
     glCallList(CANNON);
     //Draw plane
-    glCallList(PLANE);
+    if(global.square_hole) glCallList(PLANE_HOLE);
+    else glCallList(PLANE);
     //Remove excess particles
     for(int i=0;i<global.particle_arr.size();i++){
         //If particle has been killed, remove it from vector
@@ -89,10 +103,14 @@ void draw_shapes(){
     //Draw particles to screen
     for(int i=0;i<global.particle_arr.size();i++){
         //Update the particle's position
-        global.particle_arr[i].update_position();
+        global.particle_arr[i].update_position(global.square_hole);
+        if(global.draw_type == "polygon"){
+            shapes::drawCube(global.particle_arr[i]);
+        }
         //Draw the particle
-        shapes::drawCube(global.particle_arr[i].position.x,global.particle_arr[i].position.y,global.particle_arr[i].position.z,global.particle_arr[i].colour);
-        //std::cout<<global.particle_arr[0].position.x<<","<<global.particle_arr[0].position.y<<","<<global.particle_arr[0].position.z<<std::endl;
+        else if(global.draw_type == "wireframe"){
+            shapes::drawCubeWire(global.particle_arr[i]);
+        }
     }
     //Display new scene
     glutSwapBuffers();
@@ -226,65 +244,44 @@ void menu_func(int value){
         case MENU_PARTICLE:
             init_particles(1);
         break;
-        case MENU_FOV:
-            std::cout<<"Current FOV value: "<<global.fov<<std::endl;
-            std::cout<<"Enter new value for FOV: ";
-            try{
-                float new_fov;
-                std::cin>>new_fov;
-                if(std::cin.fail()) throw 1;
-                if(new_fov < 1 || new_fov > 1000) throw 2;
-                global.fov = new_fov;
+        case MENU_POLYGON:
+            global.draw_type = "polygon";
+        break;
+        case MENU_WIREFRAME:
+            global.draw_type = "wireframe";
+        break;
+        case MENU_SPRAY:
+            if(global.high_spray){
+                global.high_spray = false;
+                std::cout<<"Spray toggled to low spray"<<std::endl;
             }
-            catch(int err){
-                //Clear error flags
-                std::cin.clear();
-                //Clear input buffer
-                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-                if(err == 1){
-                    std::cout<<"Invalid input. FOV must be a number."<<std::endl;
-                }
-                if(err == 2){
-                    std::cout<<"Invalid input. FOV must be greater than 0 and less than 1000."<<std::endl;
-                }
+            else{
+                global.high_spray = true;
+                std::cout<<"Spray toggled to high spray"<<std::endl;
             }
         break;
-        case MENU_RATIO:
-        std::cout<<"Current aspect ratio value: "<<global.aspect_ratio<<std::endl;
-        std::cout<<"Enter new value for aspect ratio: ";
-        try{
-            float new_aspect_ratio;
-            std::cin>>new_aspect_ratio;
-            if(std::cin.fail()) throw 1;
-            if(new_aspect_ratio < 0.1 || new_aspect_ratio > 5) throw 2;
-            global.aspect_ratio = new_aspect_ratio;
-        }
-        catch(int err){
-            //Clear error flags
-            std::cin.clear();
-            //Clear input buffer
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            if(err == 1){
-                std::cout<<"Invalid input. Aspect ratio must be a number."<<std::endl;
+        case MENU_HOLE:
+            if(global.square_hole){
+                global.square_hole = false;
             }
-            else if(err == 2){
-                std::cout<<"Invalid input. Aspect ratio must be greater than 0.1 and less than 5."<<std::endl;
+            else{
+                global.square_hole = true;
             }
-        }
         break;
     }
 }
 //Defines a menu accessed by right clicking the graphics window
 void create_menu(){
-    //Menu for changing perspective parameters
-    int perspective_menu = glutCreateMenu(&menu_func);
-    glutAddMenuEntry("Change FOV", MENU_FOV);
-    glutAddMenuEntry("Change aspect ratio", MENU_RATIO);
+    int draw_type_menu = glutCreateMenu(&menu_func);
+    glutAddMenuEntry("Polygon", MENU_POLYGON);
+    glutAddMenuEntry("Wireframe",MENU_WIREFRAME);
     //Main right click menu
     int main_menu = glutCreateMenu(&menu_func);
     glutAddMenuEntry("Reset",MENU_RESET);
     glutAddMenuEntry("New Particle",MENU_PARTICLE);
-    //glutAddSubMenu("Perspective Parameters", perspective_menu);
+    glutAddMenuEntry("Toggle Square Hole",MENU_HOLE);
+    glutAddMenuEntry("Toggle Particle Spray",MENU_SPRAY);
+    glutAddSubMenu("Particle Render Type", draw_type_menu);
     glutAddMenuEntry("Toggle Shading", MENU_SHADE);
     glutAddMenuEntry("Toggle Backface Culling", MENU_CULL);
     glutAddMenuEntry("Quit", MENU_QUIT);
@@ -334,6 +331,7 @@ int main (int argc, char **argv){
 
     defineCannon();
     definePlane();
+    definePlaneHole();
 
     glutMainLoop();
     return 0;

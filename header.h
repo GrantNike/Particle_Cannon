@@ -14,10 +14,10 @@
 //For max and min
 #include <cmath>
 //Particle namespace file
-#include "particle.cpp"
 //Files for shape definitions
 #include "cannon.cpp"
 #include "plane.cpp"
+#include "shapes.cpp"
 
 //Function definitions
 void draw_shapes();

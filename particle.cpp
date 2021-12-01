@@ -5,7 +5,6 @@
 //For string
 #include <string>
 //For particle shapes
-#include "shapes.cpp"
 
 namespace particles{
     //3D coordinates
@@ -40,7 +39,8 @@ namespace particles{
         public:
         point position;
         point velocity;
-        //GLfloat speed;
+        GLfloat angle[3];
+        GLfloat angle_increment[3];
         GLfloat gravity;
         GLfloat colour[4][3];
         std::string shape;
@@ -54,20 +54,32 @@ namespace particles{
             kill = false;
         }
         //Particle constructor with start position as parameter
-        particle(GLfloat x, GLfloat y, GLfloat z){
+        particle(GLfloat x, GLfloat y, GLfloat z, bool high_spray){
             gravity = -0.1;
-            velocity.x = 0.1;
+            velocity.x = 0;
             velocity.y = -1;
             velocity.z = 0;
             kill = false;
-            GLfloat speed_x = ((float)(rand()%200))/100.0;
-            GLfloat speed_z = ((float)((rand()%400)-200))/100.0;
+            GLfloat speed_x = ((float)(rand()%250))/100.0;
+            GLfloat speed_z;
+            if(high_spray) speed_z = ((float)((rand()%500)-250))/100.0;
+            else speed_z = ((float)((rand()%100)-50))/100.0;
             velocity.x += speed_x;
-            //Keep direction of speed, just change magnitude of velocity in z direction
             velocity.z += speed_z;
             position.x = x;
             position.y = y;
             position.z = z;
+            angle_increment[0] = 2;
+            angle_increment[1] = -2;
+            if(velocity.z > 0){
+                angle_increment[2] = 2;
+            }
+            else{
+                angle_increment[2] = -2;
+            }
+            angle[0] = 0;
+            angle[1] = 0;
+            angle[2] = 0;
             shape = "cube";
             init_colour();
         }
@@ -79,28 +91,46 @@ namespace particles{
             }
         }
         //Check if the particle has collided with the plane
-        bool ground_collision(){
+        bool ground_collision(bool hole){
             GLfloat new_x = position.x + velocity.x;
             GLfloat new_y = position.y + velocity.y;
             GLfloat new_z = position.z + velocity.z;
-
-            return new_y < 3 && new_x < 125 && new_x > -125 && new_z < 100 && new_z > -100;
+            if(hole){
+                return (new_y < 3 && new_y > 0) && 
+                       ((new_x > -125 && new_x < -50 && new_z > -50 && new_z < 50) || (new_x > 50 && new_x < 125 && new_z > -50 && new_z < 50) || 
+                       (new_x > -125 && new_x < 125 && new_z < 100 && new_z > 50) || (new_x > -125 && new_x < 125 && new_z < -50 && new_z > -100));
+            }
+            else{
+                return new_y < 3 && new_x < 125 && new_x > -125 && new_z < 100 && new_z > -100;
+            }
         }
-        void update_position(){
+        void update_position(bool hole){
             //If particle collides with ground
-            if(ground_collision()){
+            if(ground_collision(hole)){
                 //Completly stop particle once it reaches a certain minimum speed
                 if(abs(velocity.y) < 0.5){
                     velocity.y = 0;
                     velocity.x = 0;
                     velocity.z = 0;
                     gravity = 0;
+                    angle_increment[0] = 0;
+                    angle_increment[1] = 0;
+                    angle_increment[2] = 0;
                 }
-                //Reverse y velocity of particle to make it bounce, 
-                //And scale down magnitude of velocity to add momentum loss due to friction
-                velocity.y = -0.9*velocity.y;
-                velocity.x = 0.9*velocity.x;
-                velocity.z = 0.9*velocity.z;
+                else{
+                    //Reverse y velocity of particle to make it bounce, 
+                    //And scale down magnitude of velocity to add momentum loss due to friction
+                    velocity.y = -0.8*velocity.y;
+                    velocity.x = 0.8*velocity.x;
+                    velocity.z = 0.8*velocity.z;
+                    if(angle_increment[0] < 5) angle_increment[0] = angle_increment[0]*abs(velocity.x);
+                    else angle_increment[0] -= 5;
+                    if(angle_increment[1] < 5) angle_increment[1] = angle_increment[1]*abs(velocity.y);
+                    else angle_increment[1] -= 5;
+                    if(angle_increment[2] < 5) angle_increment[2] = angle_increment[2]*abs(velocity.z);
+                    else angle_increment[2] -= 5;
+                    //angle_increment[1] = -angle_increment[1];
+                }
             }
             //Kill particle once it goes a certain depth off the plane
             else if(position.y + velocity.y < -500){
@@ -112,12 +142,16 @@ namespace particles{
             position.x += velocity.x;
             position.y += velocity.y;
             position.z += velocity.z;
-        }
-        void draw_particle(){
-            if(shape == "cube"){
-                update_position();
-                shapes::drawCube(position.x,position.y,position.z,colour);
-            }
+            //Update angle based on angle increment
+            //Angle X
+            GLfloat new_angle_x = angle[0] + angle_increment[0];
+            if(new_angle_x < 360) angle[0] = new_angle_x;
+            //Angle Y
+            GLfloat new_angle_y = angle[1] + angle_increment[1];
+            if(new_angle_y < 360) angle[1] = new_angle_y;
+            //Angle Z
+            GLfloat new_angle_z = angle[2] + angle_increment[2];
+            if(new_angle_z < 360) angle[2] = new_angle_z;
         }
         
     };
