@@ -24,7 +24,7 @@ Still to be done:
 #define Z 2
 
 //Menu options
-enum{MENU_HOLE,MENU_SPRAY, MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
+enum{MENU_LIGHTING,MENU_HOLE,MENU_SPRAY, MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
 
 //the global structure
 typedef struct {
@@ -59,9 +59,31 @@ typedef struct {
     bool high_spray = false;
     //For toggling square hole in center of ground
     bool square_hole = false;
+    //For toggling lighting
+    bool lighting = true;
 } glob;
 glob global;
 
+void myLightInit() {
+   GLfloat ambient[] = {0.1, 0.1, 0.1, 1.0};
+   GLfloat diffuse[] = {1.0, 1.0, 1.0, 1.0};
+   GLfloat specular[] = {1.0, 1.0, 1.0, 1.0};
+   GLfloat position[] = {1.0, 1.0, 1.0, 0.0};
+   GLfloat lmodel_ambient[] = {0.2, 0.2, 0.2, 1.0};
+   GLfloat local_view[] = {0.0};
+
+   glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+   glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+   glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+   glLightfv(GL_LIGHT0, GL_POSITION, position);
+   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
+   glLightModelfv(GL_LIGHT_MODEL_LOCAL_VIEWER, local_view);
+
+   glEnable(GL_LIGHTING);   /* turns on lighting */
+   glEnable(GL_LIGHT0);     /* turns on light 0  */
+
+   glEnable(GL_NORMALIZE);
+}
 //Initialize some particles
 void init_particles(int numb_particles){
     //Initialize parameters for new particles
@@ -268,6 +290,18 @@ void menu_func(int value){
                 global.square_hole = true;
             }
         break;
+        case MENU_LIGHTING:
+            if(global.lighting){
+                global.lighting = false;
+                glDisable(GL_LIGHTING);
+                glDisable(GL_LIGHT0);
+            }
+            else{
+                global.lighting = true;
+                glEnable(GL_LIGHTING);
+                glEnable(GL_LIGHT0);
+            }
+        break;
     }
 }
 //Defines a menu accessed by right clicking the graphics window
@@ -279,6 +313,7 @@ void create_menu(){
     int main_menu = glutCreateMenu(&menu_func);
     glutAddMenuEntry("Reset",MENU_RESET);
     glutAddMenuEntry("New Particle",MENU_PARTICLE);
+    glutAddMenuEntry("Toggle Lighting",MENU_LIGHTING);
     glutAddMenuEntry("Toggle Square Hole",MENU_HOLE);
     glutAddMenuEntry("Toggle Particle Spray",MENU_SPRAY);
     glutAddSubMenu("Particle Render Type", draw_type_menu);
@@ -332,6 +367,7 @@ int main (int argc, char **argv){
     defineCannon();
     definePlane();
     definePlaneHole();
+    myLightInit();
 
     glutMainLoop();
     return 0;

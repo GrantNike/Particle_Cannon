@@ -21,9 +21,23 @@ namespace shapes{
         glRotatef(part.angle[0], 1.0, 0.0, 0.0);
         glRotatef(part.angle[1], 0.0, 1.0, 0.0);
         glRotatef(part.angle[2], 0.0, 0.0, 1.0);
+
+        float norm[][3] = {{0,0,1.0},{-1.0,0,0},{0,0,-1.0},{1.0,0,0},{0,1.0,0},{0,-1.0,0}};
+        GLfloat mat_ambient[] = {0.0215, 0.1745, 0.0215, 1.0};
+        //GLfloat mat_diffuse[] = {0.6142, 0.0757, 0.1757, 1.0};
+        GLfloat mat_diffuse[] = {part.colour[0][0],part.colour[0][1],part.colour[0][2],1.0};
+        GLfloat mat_specular[] = {0.2, 0.2, 0.2, 1.0};
+        GLfloat mat_shininess[] = { 77.0 };
+
+        glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+        glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+        glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+
         //Draw shape
         for (int i=0; i < 6; ++i) {
-            glColor3fv(c[i]);
+            glColor3fv(singleColour[i%4]);
+            glNormal3fv(norm[i]);
             glBegin(GL_POLYGON);
                 glColor3fv(part.colour[0]);
                 glVertex3iv(dimensions[e[i][0]]);
