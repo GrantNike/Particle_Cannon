@@ -25,7 +25,8 @@ idea: allow user to change gravity and friction values
 #define Z 2
 
 //Menu options
-enum{MENU_LIGHTING,MENU_HOLE,MENU_SPRAY, MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
+enum{MENU_NORMAL_GRAVITY,MENU_NORMAL_FRICTION,MENU_HALF_FRICTION, MENU_HALF_GRAVITY,MENU_LIGHTING,MENU_HOLE,MENU_SPRAY, 
+MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
 
 //the global structure
 typedef struct {
@@ -44,7 +45,10 @@ typedef struct {
     GLfloat up[3] = {0.0, 1.0, 0.0};
     GLfloat rotate_x = 0.0;
     GLfloat rotate_y = 0.0;
+    //Angle of scene
     float angle[3];
+    //Rotation rate of scene
+    float rotation_rate = 0.35;
     //For resetting image to starting position
     int numb_rotations = 0;
     //For toggling culling and shading
@@ -62,6 +66,9 @@ typedef struct {
     bool square_hole = false;
     //For toggling lighting
     bool lighting = true;
+    //For changing values of friction and gravity of particles
+    GLfloat gravity_mod = 1;
+    GLfloat friction_mod = 1;
 } glob;
 glob global;
 
@@ -69,7 +76,7 @@ void myLightInit() {
    GLfloat ambient[] = {0.1, 0.1, 0.1, 1.0};
    GLfloat diffuse[] = {1.0, 1.0, 1.0, 1.0};
    GLfloat specular[] = {1.0, 1.0, 1.0, 1.0};
-   GLfloat position[] = {1.0, 1.0, 1.0, 0.0};
+   GLfloat position[] = {35.0, 100.0, 150.0, 0.1};
    GLfloat lmodel_ambient[] = {0.2, 0.2, 0.2, 1.0};
    GLfloat local_view[] = {0.0};
 
@@ -93,7 +100,7 @@ void init_particles(int numb_particles){
     GLfloat z = 0.0;
     for(int i=0;i<numb_particles;i++){
         //Create particle and set its starting position
-        particles::particle part(x,y,z,global.high_spray);
+        particles::particle part(x,y,z,global.high_spray,global.gravity_mod,global.friction_mod);
         //Add particle to global particle pool
         global.particle_arr.push_back(part);
     }
@@ -192,25 +199,25 @@ void keyboard(unsigned char key, int x, int y){
             break;
         case 'd':
             glPushMatrix();
-            global.rotate_y += -0.5;
+            global.rotate_y += -global.rotation_rate;
             global.numb_rotations++;
             glutPostRedisplay();
             break;
         case 'a':
             glPushMatrix();
-            global.rotate_y += 0.5;
+            global.rotate_y += global.rotation_rate;
             global.numb_rotations++;
             glutPostRedisplay();
             break;
         case 'w':
             glPushMatrix();
-            global.rotate_x += 0.5;
+            global.rotate_x += global.rotation_rate;
             global.numb_rotations++;
             glutPostRedisplay();
             break;
         case 's':
             glPushMatrix();
-            global.rotate_x += -0.5;
+            global.rotate_x += -global.rotation_rate;
             global.numb_rotations++;
             glutPostRedisplay();
             break;
@@ -303,20 +310,41 @@ void menu_func(int value){
                 glEnable(GL_LIGHT0);
             }
         break;
+        case MENU_NORMAL_GRAVITY:
+            global.gravity_mod = 1;
+            std::cout<<"Normal Gravity"<<std::endl;
+        break;
+        case MENU_NORMAL_FRICTION:
+            global.friction_mod = 1;
+            std::cout<<"Normal Friction"<<std::endl;
+        break;
+        case MENU_HALF_GRAVITY:
+            global.gravity_mod = 0.25;
+            std::cout<<"Half Gravity"<<std::endl;
+        break;
+        case MENU_HALF_FRICTION:
+            global.friction_mod = 1.5;
+            std::cout<<"Half Friction"<<std::endl;
+        break;
     }
 }
 //Defines a menu accessed by right clicking the graphics window
 void create_menu(){
+    int modifier_menu = glutCreateMenu(&menu_func);
+    glutAddMenuEntry("Half Gravity",MENU_HALF_GRAVITY);
+    glutAddMenuEntry("Half Friction",MENU_HALF_FRICTION);
+    glutAddMenuEntry("Normal Gravity",MENU_NORMAL_GRAVITY);
+    glutAddMenuEntry("Normal Friction",MENU_NORMAL_FRICTION);
     int draw_type_menu = glutCreateMenu(&menu_func);
     glutAddMenuEntry("Polygon", MENU_POLYGON);
     glutAddMenuEntry("Wireframe",MENU_WIREFRAME);
     //Main right click menu
     int main_menu = glutCreateMenu(&menu_func);
     glutAddMenuEntry("Reset",MENU_RESET);
-    glutAddMenuEntry("New Particle",MENU_PARTICLE);
+    glutAddMenuEntry("Toggle Particle Spray",MENU_SPRAY);
     glutAddMenuEntry("Toggle Lighting",MENU_LIGHTING);
     glutAddMenuEntry("Toggle Square Hole",MENU_HOLE);
-    glutAddMenuEntry("Toggle Particle Spray",MENU_SPRAY);
+    glutAddSubMenu("Modify Particle Behaviour",modifier_menu);
     glutAddSubMenu("Particle Render Type", draw_type_menu);
     glutAddMenuEntry("Toggle Shading", MENU_SHADE);
     glutAddMenuEntry("Toggle Backface Culling", MENU_CULL);
@@ -326,6 +354,7 @@ void create_menu(){
 //Prints the key and its function to the terminal
 void key_commands(){
     std::cout<<"E = Single Particle Shot"<<std::endl;
+    std::cout<<"F = Constant Particle Stream"<<std::endl;
     std::cout<<"Q = Quit"<<std::endl;
 }
 

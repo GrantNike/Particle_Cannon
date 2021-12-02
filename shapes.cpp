@@ -36,7 +36,7 @@ namespace shapes{
 
         //Draw shape
         for (int i=0; i < 6; ++i) {
-            glColor3fv(singleColour[i%4]);
+            glColor3fv(part.colour[0]);
             glNormal3fv(norm[i]);
             glBegin(GL_POLYGON);
                 glColor3fv(part.colour[0]);

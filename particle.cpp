@@ -42,6 +42,7 @@ namespace particles{
         GLfloat angle[3];
         GLfloat angle_increment[3];
         GLfloat gravity;
+        GLfloat friction;
         GLfloat colour[4][3];
         std::string shape;
         bool kill;
@@ -54,8 +55,9 @@ namespace particles{
             kill = false;
         }
         //Particle constructor with start position as parameter
-        particle(GLfloat x, GLfloat y, GLfloat z, bool high_spray){
-            gravity = -0.1;
+        particle(GLfloat x, GLfloat y, GLfloat z, bool high_spray, GLfloat gravity_mod,GLfloat friction_mod){
+            gravity = -0.1*gravity_mod;
+            friction = 0.8*friction_mod;
             velocity.x = 0;
             velocity.y = -1;
             velocity.z = 0;
@@ -84,9 +86,12 @@ namespace particles{
             init_colour();
         }
         void init_colour(){
+            for(int j=0;j<3;j++){
+                colour[0][j] = ((float)(rand()%100))/100.0;
+            }
             for(int i=0;i<4;i++){
                 for(int j=0;j<3;j++){
-                    colour[i][j] = ((float)(rand()%100))/100.0;
+                    colour[i][j] = colour[0][j] * (2.0/(((double)i)+1.0));
                 }
             }
         }
@@ -120,9 +125,9 @@ namespace particles{
                 else{
                     //Reverse y velocity of particle to make it bounce, 
                     //And scale down magnitude of velocity to add momentum loss due to friction
-                    velocity.y = -0.8*velocity.y;
-                    velocity.x = 0.8*velocity.x;
-                    velocity.z = 0.8*velocity.z;
+                    velocity.y = -friction*velocity.y;
+                    velocity.x = friction*velocity.x;
+                    velocity.z = friction*velocity.z;
                     if(angle_increment[0] < 5) angle_increment[0] = angle_increment[0]*abs(velocity.x);
                     else angle_increment[0] -= 5;
                     if(angle_increment[1] < 5) angle_increment[1] = angle_increment[1]*abs(velocity.y);
