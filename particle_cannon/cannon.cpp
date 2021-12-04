@@ -1,3 +1,10 @@
+/*
+Grant Nike
+6349302
+Dec 6th
+COSC 3P98 Assignment #3
+*/
+
 //For gl and glut
 #include <GL/gl.h>
 #include <GL/glu.h>
