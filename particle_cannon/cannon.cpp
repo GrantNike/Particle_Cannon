@@ -25,12 +25,12 @@ void defineCannon(void) {
    //Move cannon to position
    glPushMatrix();
    glTranslatef(-125.0,45.0,0.0);
-
+   //Set material settings
    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
+   //Define shape vertices
    for (int i=0; i < 6; ++i) {
       glColor3fv(c[i]);
       glNormal3fv(norm[i]);

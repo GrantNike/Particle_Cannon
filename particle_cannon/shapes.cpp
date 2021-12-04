@@ -4,10 +4,11 @@
 #include <GL/glut.h>
 #include "particle.cpp"
 
+//Defines possible particle shapes
 namespace shapes{
-    
+    //Draws a particle as a cube
     void drawCube(particles::particle part) {
-        //Dimensions of shape
+        //Dimensions of shape 
         float dimensions[][3] = {{2,2,2}, {2,-2,2}, {-2,-2,2}, {-2,2,2},
                     {2,2,-2}, {2,-2,-2}, {-2,-2,-2}, {-2,2,-2}};
         int e[][4] = {{0,3,2,1},{3,7,6,2},{7,4,5,6},{4,0,1,5}, {0,4,7,3},{1,2,6,5}};
@@ -58,7 +59,7 @@ namespace shapes{
         }
         glPopMatrix();
     }
-
+    //Draws a particle as a wireframe cube
     void drawCubeWire(particles::particle part) {
         int v[8][3] = {
             {2,2,2}, 

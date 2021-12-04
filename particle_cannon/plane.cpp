@@ -5,16 +5,16 @@
 
 #define PLANE 2
 #define PLANE_HOLE 3
-
+//Defines the shape of the ground plane
 void definePlane(void){
+
     int p[][3] = {{125,0,100},{-125,0,100},{-125,0,-100},{125,0,-100},
                   {125,-25,100},{-125,-25,100},{-125,-25,-100},{125,-25,-100}};
     
-    //float topColours[][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
     float topColours[][3] = { {0.0,0.6,0.0},{0.0,0.3,0.0},{0.0,0.5,0.0},{0.0,0.4,0.0} };
     float sideColours[][3] = { {0.0,0.6,0.0},{0.0,0.3,0.0},{0.0,0.5,0.0},{0.0,0.4,0.0} };
-    //float sideColours[][3] = { {0.0,0.4,0.0},{0.0,0.1,0.0},{0.0,0.3,0.0},{0.0,0.2,0.0} };
     
+    //For lighting and materials
     float norm[][3] = {{0,0,1.0},{-1.0,0,0},{0,0,-1.0},{1.0,0,0},{0,1.0,0},{0,-1.0,0}};
     GLfloat mat_ambient[] = {0.0215, 0.1745, 0.0215, 1.0};
     GLfloat mat_diffuse[] = {0.0757, 0.6142, 0.1757, 1.0};
@@ -22,7 +22,7 @@ void definePlane(void){
     GLfloat mat_shininess[] = { 77.0 };
 
     glNewList(PLANE, GL_COMPILE);
-
+    //Set material settings
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
@@ -118,20 +118,17 @@ void definePlaneHole(void){
     int rect4[][3] = {{125,0,50},{50,0,50},{50,0,-50},{125,0,-50},
                       {125,-25,50},{50,-25,50},{50,-25,-50},{125,-25,-50}};
     
-    //float topColours[][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
     float topColours[][3] = { {0.0,0.6,0.0},{0.0,0.3,0.0},{0.0,0.5,0.0},{0.0,0.4,0.0} };
     float sideColours[][3] = { {0.0,0.6,0.0},{0.0,0.3,0.0},{0.0,0.5,0.0},{0.0,0.4,0.0} };
-    //float sideColours[][3] = { {0.0,0.4,0.0},{0.0,0.1,0.0},{0.0,0.3,0.0},{0.0,0.2,0.0} };
-
+    //For lighting and materials
     float norm[][3] = {{0,0,1.0},{-1.0,0,0},{0,0,-1.0},{1.0,0,0},{0,1.0,0},{0,-1.0,0}};
     GLfloat mat_ambient[] = {0.0215, 0.1745, 0.0215, 1.0};
     GLfloat mat_diffuse[] = {0.0757, 0.6142, 0.1757, 1.0};
-    GLfloat mat_specular[] = {0.2, 0.2, 0.2, 1.0};
+    GLfloat mat_specular[] = {0.2, 0.2, 0.2, 1.0};//float topColours[][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
     GLfloat mat_shininess[] = { 77.0 };
-    
 
     glNewList(PLANE_HOLE, GL_COMPILE);
-
+    //Set material settings
     glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);

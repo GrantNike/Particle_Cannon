@@ -20,6 +20,11 @@
 #include "shapes.cpp"
 
 //Function definitions
+void myLightInit();
+void init_particles(int numb_particels);
+void reset_orientation();
+void reset_particles();
+void reset_scene();
 void draw_shapes();
 void init_particles();
 //Glut keyboard function to handle keyboard inputs

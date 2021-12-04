@@ -34,18 +34,28 @@ namespace particles{
             return p;
         }
     };
-    //A single particle in the swarm
+    //A single particle
     class particle{
         public:
+        //Position of the particle in the scene
         point position;
+        //The speed and direction of the particle
         point velocity;
+        //The angle the particle is rotated from its starting position
         GLfloat angle[3];
+        //The value the particle's angle is incremented by to produce rotation in the animation
         GLfloat angle_increment[3];
+        //The force pulling the particle toward the ground
         GLfloat gravity;
+        //Controls the amount of momentum lost after a collision
         GLfloat friction;
+        //The default colour of the particle
         GLfloat colour[4][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
+        //The shape of the particle
         std::string shape;
+        //Determines whether the particle is still to be considered in the simulation
         bool kill;
+        //The size multiplier
         GLfloat size_mult;
         //Default Particle constructor
         particle(){
@@ -57,23 +67,29 @@ namespace particles{
         }
         //Particle constructor with start position as parameter
         particle(GLfloat x, GLfloat y, GLfloat z, bool high_spray, bool rand_size, bool rand_colour, GLfloat gravity_mod,GLfloat friction_mod){
+            //Set default values
             gravity = -0.1*gravity_mod;
             friction = 0.8*friction_mod;
             velocity.x = 0;
             velocity.y = -1;
             velocity.z = 0;
             kill = false;
+            shape = "cube";
+            //Set random values
             if(rand_size) size_mult = (((float)(rand()%150))/100.0)+0.5;
             else size_mult = 1;
             GLfloat speed_x = ((float)(rand()%250))/100.0;
             GLfloat speed_z;
             if(high_spray) speed_z = ((float)((rand()%500)-250))/100.0;
             else speed_z = ((float)((rand()%100)-50))/100.0;
+            if(rand_colour) init_colour();
+            //Set values entered as parameters
             velocity.x += speed_x;
             velocity.z += speed_z;
             position.x = x;
             position.y = y;
             position.z = z;
+            //Set values that depend on parameters
             angle_increment[0] = 2;
             angle_increment[1] = -2;
             if(velocity.z > 0){
@@ -85,9 +101,8 @@ namespace particles{
             angle[0] = 0;
             angle[1] = 0;
             angle[2] = 0;
-            shape = "cube";
-            if(rand_colour) init_colour();
         }
+        //Randomly set colour of particle
         void init_colour(){
             for(int j=0;j<3;j++){
                 colour[0][j] = ((float)(rand()%100))/100.0;
