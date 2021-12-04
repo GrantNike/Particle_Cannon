@@ -4,7 +4,7 @@
 #include <GL/glut.h>
 
 #define CANNON 1
-
+//Defines the shape of the particle cannon
 void defineCannon(void) {
    int p[][3] = {{10,10,10}, {10,-10,10}, {-10,-10,10}, {-10,10,10},
                  {10,10,-10}, {10,-10,-10}, {-10,-10,-10}, {-10,10,-10}};

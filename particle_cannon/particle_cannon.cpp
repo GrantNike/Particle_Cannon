@@ -77,6 +77,7 @@ typedef struct {
 } glob;
 glob global;
 
+//Initialize lighting and material settings
 void myLightInit() {
    GLfloat ambient[] = {0.1, 0.1, 0.1, 1.0};
    GLfloat diffuse[] = {1.0, 1.0, 1.0, 1.0};
