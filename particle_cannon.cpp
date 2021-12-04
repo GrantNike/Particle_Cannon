@@ -10,11 +10,12 @@ from code examples page by Brian J. Ross
 */
 
 /*
-Still to be done:
+Chosen options done:
 idea: allow user to change gravity and friction values
+12. spray modes
 14. lighting and materials
-18. different shapes(colours already done)
-15. collide with objects on ground, use fast distance
+18. different colours and sizes
+19. square hole in ground
 */
 
 //Header file contains all other includes, and function declarations
@@ -26,7 +27,8 @@ idea: allow user to change gravity and friction values
 
 //Menu options
 enum{MENU_NORMAL_GRAVITY,MENU_NORMAL_FRICTION,MENU_HALF_FRICTION, MENU_HALF_GRAVITY,MENU_LIGHTING,MENU_HOLE,MENU_SPRAY, 
-MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,MENU_RESET, MENU_QUIT};
+MENU_RAND_SIZE,MENU_RAND_COLOUR,MENU_POLYGON,MENU_WIREFRAME,MENU_PARTICLE,MENU_RATIO,MENU_FOV,MENU_SHADE,MENU_CULL,
+MENU_RESET_ORIENTATION,MENU_RESET_PARTICLES,MENU_RESET, MENU_QUIT};
 
 //the global structure
 typedef struct {
@@ -66,6 +68,9 @@ typedef struct {
     bool square_hole = false;
     //For toggling lighting
     bool lighting = true;
+    //For toggling random sizes and colours for particles
+    bool rand_size = false;
+    bool rand_colour = false;
     //For changing values of friction and gravity of particles
     GLfloat gravity_mod = 1;
     GLfloat friction_mod = 1;
@@ -100,7 +105,7 @@ void init_particles(int numb_particles){
     GLfloat z = 0.0;
     for(int i=0;i<numb_particles;i++){
         //Create particle and set its starting position
-        particles::particle part(x,y,z,global.high_spray,global.gravity_mod,global.friction_mod);
+        particles::particle part(x,y,z,global.high_spray,global.rand_size,global.rand_colour,global.gravity_mod,global.friction_mod);
         //Add particle to global particle pool
         global.particle_arr.push_back(part);
     }
@@ -143,8 +148,11 @@ void draw_shapes(){
         }
     }
     //Display new scene
+    //Double buffering
     glutSwapBuffers();
+    //Display buffer
     glFlush();
+    //Call draw function
     glutPostRedisplay();
 }
 //Reset orientation of scene
@@ -247,6 +255,12 @@ void menu_func(int value){
         case MENU_RESET:
             reset_scene();
         break;
+        case MENU_RESET_ORIENTATION:
+            reset_orientation();
+        break;
+        case MENU_RESET_PARTICLES:
+            reset_particles();
+        break;
         case MENU_CULL:
             if(global.cull_enabled){
                 glDisable(GL_CULL_FACE);
@@ -326,11 +340,40 @@ void menu_func(int value){
             global.friction_mod = 1.5;
             std::cout<<"Half Friction"<<std::endl;
         break;
+        case MENU_RAND_SIZE:
+            if(global.rand_size){
+                global.rand_size = false;
+                std::cout<<"Default Size"<<std::endl;
+            }
+            else{
+                global.rand_size = true;
+                std::cout<<"Random Sizes"<<std::endl;
+            }
+        break;
+        case MENU_RAND_COLOUR:
+            if(global.rand_colour){
+                global.rand_colour = false;
+                std::cout<<"Default Colour"<<std::endl;
+            }
+            else{
+                global.rand_colour = true;
+                std::cout<<"Random Colours"<<std::endl;
+            }
+        break;
     }
 }
 //Defines a menu accessed by right clicking the graphics window
 void create_menu(){
+    int render_menu = glutCreateMenu(&menu_func);
+    glutAddMenuEntry("Toggle Lighting",MENU_LIGHTING);
+    glutAddMenuEntry("Toggle Shading", MENU_SHADE);
+    glutAddMenuEntry("Toggle Backface Culling", MENU_CULL);
+    int reset_menu = glutCreateMenu(&menu_func);
+    glutAddMenuEntry("Reset Orientation",MENU_RESET_ORIENTATION);
+    glutAddMenuEntry("Reset Particles",MENU_RESET_PARTICLES);
     int modifier_menu = glutCreateMenu(&menu_func);
+    glutAddMenuEntry("Toggle Random Colours",MENU_RAND_COLOUR);
+    glutAddMenuEntry("Toggle Random Sizes",MENU_RAND_SIZE);
     glutAddMenuEntry("Half Gravity",MENU_HALF_GRAVITY);
     glutAddMenuEntry("Half Friction",MENU_HALF_FRICTION);
     glutAddMenuEntry("Normal Gravity",MENU_NORMAL_GRAVITY);
@@ -341,13 +384,12 @@ void create_menu(){
     //Main right click menu
     int main_menu = glutCreateMenu(&menu_func);
     glutAddMenuEntry("Reset",MENU_RESET);
+    glutAddSubMenu("Rest Options",reset_menu);
     glutAddMenuEntry("Toggle Particle Spray",MENU_SPRAY);
-    glutAddMenuEntry("Toggle Lighting",MENU_LIGHTING);
     glutAddMenuEntry("Toggle Square Hole",MENU_HOLE);
-    glutAddSubMenu("Modify Particle Behaviour",modifier_menu);
-    glutAddSubMenu("Particle Render Type", draw_type_menu);
-    glutAddMenuEntry("Toggle Shading", MENU_SHADE);
-    glutAddMenuEntry("Toggle Backface Culling", MENU_CULL);
+    glutAddSubMenu("Modify Particles",modifier_menu);
+    glutAddSubMenu("Particle Draw Options", draw_type_menu);
+    glutAddSubMenu("Rendering Options",render_menu);
     glutAddMenuEntry("Quit", MENU_QUIT);
     glutAttachMenu(GLUT_RIGHT_BUTTON);
 }

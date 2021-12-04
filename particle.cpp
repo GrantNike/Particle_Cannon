@@ -43,9 +43,10 @@ namespace particles{
         GLfloat angle_increment[3];
         GLfloat gravity;
         GLfloat friction;
-        GLfloat colour[4][3];
+        GLfloat colour[4][3] = { {0.9,0.0,0.0},{0.1,0.0,0.0},{0.8,0.0,0.0},{0.5,0.0,0.0} };
         std::string shape;
         bool kill;
+        GLfloat size_mult;
         //Default Particle constructor
         particle(){
             gravity = -0.1;
@@ -55,13 +56,15 @@ namespace particles{
             kill = false;
         }
         //Particle constructor with start position as parameter
-        particle(GLfloat x, GLfloat y, GLfloat z, bool high_spray, GLfloat gravity_mod,GLfloat friction_mod){
+        particle(GLfloat x, GLfloat y, GLfloat z, bool high_spray, bool rand_size, bool rand_colour, GLfloat gravity_mod,GLfloat friction_mod){
             gravity = -0.1*gravity_mod;
             friction = 0.8*friction_mod;
             velocity.x = 0;
             velocity.y = -1;
             velocity.z = 0;
             kill = false;
+            if(rand_size) size_mult = (((float)(rand()%150))/100.0)+0.5;
+            else size_mult = 1;
             GLfloat speed_x = ((float)(rand()%250))/100.0;
             GLfloat speed_z;
             if(high_spray) speed_z = ((float)((rand()%500)-250))/100.0;
@@ -83,7 +86,7 @@ namespace particles{
             angle[1] = 0;
             angle[2] = 0;
             shape = "cube";
-            init_colour();
+            if(rand_colour) init_colour();
         }
         void init_colour(){
             for(int j=0;j<3;j++){
